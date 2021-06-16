@@ -5,7 +5,7 @@ use strum_macros::{AsRefStr, Display, EnumString, EnumVariantNames};
 
 #[async_trait::async_trait]
 pub trait DnsLinker {
-    async fn link(&self, hash: &str) -> Result<()>;
+    async fn link(&self, hash: &str, record: &str) -> Result<()>;
 }
 
 #[derive(Debug, AsRefStr, Display, EnumString, EnumVariantNames)]

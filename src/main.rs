@@ -68,10 +68,12 @@ async fn main() -> Result<()> {
     println!("Pinned {} with hash {}", conf.path.display(), hash);
 
     if let Some(dns) = &conf.dns {
+        let record = conf.dnslink_record.unwrap_or_else(|| unreachable!());
         let linker: &dyn DnsLinker = match dns {
             DnsLinkers::Cloudflare => &conf.cloudflare as &dyn DnsLinker,
         };
-        let _ = linker.link(&hash).await?;
+        let _ = linker.link(&hash, record.as_ref()).await?;
+        println!("Update dnslink record for {} with dnslink=/ipfs/{}", record, hash);
     }
 
     Ok(())
