@@ -13,4 +13,3 @@ pub trait DnsLinker {
 pub enum DnsLinkers {
     Cloudflare,
 }
-

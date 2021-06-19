@@ -1,5 +1,5 @@
-pub mod pinners;
 pub mod dnslinkers;
+pub mod pinners;
 
 use std::{convert::AsRef, path::PathBuf, string::ToString};
 
@@ -7,8 +7,8 @@ use anyhow::Result;
 use clap::{crate_authors, crate_description, crate_name, crate_version, Clap};
 use strum::VariantNames;
 
-use crate::pinners::{Pinner, Pinners, pinata::Pinata, infura::Infura};
-use crate::dnslinkers::{DnsLinker, DnsLinkers, cloudflare::Cloudflare};
+use crate::dnslinkers::{cloudflare::Cloudflare, DnsLinker, DnsLinkers};
+use crate::pinners::{infura::Infura, pinata::Pinata, Pinner, Pinners};
 
 /// Upload a path to a IPFS pinning service and update a DNSLINK record of choice
 #[derive(Clap, Debug)]
@@ -51,9 +51,7 @@ struct Config {
 
     #[clap(flatten)]
     pinata: Pinata,
-
 }
-
 
 #[async_std::main]
 async fn main() -> Result<()> {
@@ -63,7 +61,7 @@ async fn main() -> Result<()> {
         Pinners::Infura => &conf.infura as &dyn Pinner,
         Pinners::Pinata => &conf.pinata as &dyn Pinner,
     };
-    let hash = pinner.pin(conf.path.as_path()).await?;
+    let hash = pinner.pin_path(conf.path.as_path()).await?;
 
     println!("Pinned {} with hash {}", conf.path.display(), hash);
 
@@ -73,7 +71,10 @@ async fn main() -> Result<()> {
             DnsLinkers::Cloudflare => &conf.cloudflare as &dyn DnsLinker,
         };
         let _ = linker.link(&hash, record.as_ref()).await?;
-        println!("Update dnslink record for {} with dnslink=/ipfs/{}", record, hash);
+        println!(
+            "Set dnslink record for {} with dnslink=/ipfs/{}",
+            record, hash
+        );
     }
 
     Ok(())
